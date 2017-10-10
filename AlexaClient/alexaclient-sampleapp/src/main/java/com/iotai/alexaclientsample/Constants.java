@@ -21,7 +21,7 @@ public class Constants {
     public static final String CODE_CHALLENGE = "codeChallenge";
     public static final String CODE_CHALLENGE_METHOD = "codeChallengeMethod";
     public static final String DSN = "dsn";
-    public static final String PRODUCT_ID = "productId";
+    public static final String PRODUCT_ID = "AlexaClient";
     public static final String PRODUCT_INSTANCE_ATTRIBUTES = "productInstanceAttributes";
     public static final String DEVICE_SERIAL_NUMBER = "deviceSerialNumber";
 

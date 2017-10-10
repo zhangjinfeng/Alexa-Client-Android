@@ -25,7 +25,6 @@
                     android:scheme="amzn" />
             </intent-filter>
         </activity>
-        <activity android:name=".LoginWithAmazonActivity"></activity>
     </application>
 
 </manifest>

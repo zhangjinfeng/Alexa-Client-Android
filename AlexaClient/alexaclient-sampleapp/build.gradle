@@ -11,11 +11,25 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        release {
+            storeFile file('D:\\work\\backup\\androidkeystore\\AndroidKeyStore.jks')
+            storePassword 'AndroidKeyStore'
+            keyAlias 'AlexaClientKey'
+            keyPassword 'AlexaClientKey'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
+
+        debug {
+            signingConfig signingConfigs.release
+        }
+
     }
 }
 

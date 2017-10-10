@@ -17,7 +17,7 @@ public class Configuration implements Serializable {
     /*********************************** Key Definitions *************************************************/
     // APP-related information
     public final static String KEY_APP_VERSION = "Version";
-    public final static String KEY_PRODUCT_ID = "Version";
+    public final static String KEY_PRODUCT_ID = "ProductID";
 
     // Device-related information
     public final static String KEY_MAC_ADDRESS = "MacAddress";
@@ -29,7 +29,7 @@ public class Configuration implements Serializable {
     /*********************************** Default values *************************************************/
     // APP-related information
     public final static String DEFAULT_VALUE_APP_VERSION = "1.0";
-    public static final String DEFAULT_VALUE_PRODUCT_ID = "StudyEnglishWord";
+    public static final String DEFAULT_VALUE_PRODUCT_ID = "AlexaClient";
 
     public Configuration(Context context) {
         mProperties = new Properties();
@@ -64,7 +64,7 @@ public class Configuration implements Serializable {
         }
         props.put(KEY_MAC_ADDRESS, mac);
 
-        String deviceSerialNumber = SerialNumberBuilder.builder(mContext);
+        String deviceSerialNumber = SerialNumberBuilder.build(mContext);
         props.put(KEY_DEVICE_SERIAL_NUMBER, deviceSerialNumber);
 
         return props;

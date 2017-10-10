@@ -8,7 +8,7 @@ import android.telephony.TelephonyManager;
  * Created by zhangjf9 on 2014/8/14.
  */
 public class SerialNumberBuilder {
-    public static String builder(Context context)
+    public static String build(Context context)
     {
         String mac = "";
         String androidId = "";

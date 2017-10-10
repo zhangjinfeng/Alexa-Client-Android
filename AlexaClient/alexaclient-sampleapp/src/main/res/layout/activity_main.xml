@@ -7,20 +7,6 @@
     tools:context="com.iotai.alexaclientsample.MainActivity" >
 
     <Button
-        android:id="@+id/buttonInitialize"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/initialize"
-        android:gravity="center_horizontal"/>
-
-    <Button
-        android:id="@+id/buttonRelease"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/release"
-        android:gravity="center_horizontal"/>
-
-    <Button
         android:id="@+id/buttonLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,17 +14,17 @@
         android:gravity="center_horizontal"/>
 
     <Button
-        android:id="@+id/buttonLogout"
+        android:id="@+id/buttonSignOut"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/logout"
+        android:text="@string/signout"
         android:gravity="center_horizontal"/>
 
     <Button
-        android:id="@+id/buttonCallAlexa"
+        android:id="@+id/buttonPressMe"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/callalexa"
+        android:text="@string/pressme"
         android:gravity="center_horizontal"/>
 
 </LinearLayout>

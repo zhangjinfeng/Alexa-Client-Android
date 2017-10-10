@@ -1,38 +1,93 @@
 package com.iotai.alexaclientsample;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-import com.iotai.alexaclient.R;
+import com.iotai.alexaclient.AmazonLoginEngine;
+import com.iotai.alexaclient.AmazonLoginEngineListener;
+import com.iotai.utils.Logger;
+import com.iotai.utils.SerialNumberBuilder;
 
 public class MainActivity extends AppCompatActivity {
-    
+
+    private String SERIAL_NUMBER = SerialNumberBuilder.build(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button buttonInitialize = (Button) findViewById(R.id.buttonInitialize);
-        buttonInitialize.setOnClickListener(mButtonInitializeOnClickListener);
-
-        Button buttonRelease = (Button) findViewById(R.id.buttonRelease);
-        buttonRelease.setOnClickListener(mButtonReleaseOnClickListener);
+        AmazonLoginEngine.getInstance().initialize(this);
+        AmazonLoginEngine.getInstance().addListener(mAmazaonEngineListener);
 
         Button buttonLogin = (Button) findViewById(R.id.buttonLogin);
         buttonLogin.setOnClickListener(mButtonLoginOnClickListener);
 
-        Button buttonLogout = (Button) findViewById(R.id.buttonLogout);
-        buttonLogout.setOnClickListener(mButtonLogoutOnClickListener);
+        Button buttonSignOut = (Button) findViewById(R.id.buttonSignOut);
+        buttonSignOut.setOnClickListener(mButtonSignOutOnClickListener);
 
-        Button buttonCallAlexa = (Button) findViewById(R.id.buttonCallAlexa);
-        buttonCallAlexa.setOnClickListener(mButtonCallAlexaOnClickListener);
+        Button buttonPressMe = (Button) findViewById(R.id.buttonPressMe);
+        buttonPressMe.setOnClickListener(mButtonPressMeOnClickListener);
     }
 
-    private View.OnClickListener mButtonInitializeOnClickListener;
-    private View.OnClickListener mButtonReleaseOnClickListener;
-    private View.OnClickListener mButtonLoginOnClickListener;
-    private View.OnClickListener mButtonLogoutOnClickListener;
-    private View.OnClickListener mButtonCallAlexaOnClickListener;
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        AmazonLoginEngine.getInstance().release();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        AmazonLoginEngine.getInstance().onResume();
+    }
+
+    private View.OnClickListener mButtonLoginOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            AmazonLoginEngine.getInstance().login(SERIAL_NUMBER, Constants.PRODUCT_ID);
+        }
+    };
+
+    private View.OnClickListener mButtonSignOutOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            AmazonLoginEngine.getInstance().signOut();
+        }
+    };
+
+    private View.OnClickListener mButtonPressMeOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+        }
+    };
+
+    private AmazonLoginEngineListener mAmazaonEngineListener = new AmazonLoginEngineListener() {
+        @Override
+        public void onLogin() {
+            Logger.i("Amazon Account Login successfully.");
+            String accessToken = AmazonLoginEngine.getInstance().getAccessToken();
+            Logger.i("AVS access token:" + accessToken);
+        }
+
+        @Override
+        public void onLoginCancel() {
+            Logger.i("Amazon Account Login is canceled.");
+        }
+
+        @Override
+        public void onSignOut() {
+            Logger.i("Amazon Account sign out successfully.");
+        }
+
+        @Override
+        public void onError(String errMessage) {
+            Logger.i("Amazon Account Login Error: " + errMessage);
+        }
+    };
 }
