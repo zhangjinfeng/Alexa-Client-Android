@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AlexaClient</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="initialize">Initialize</string>
+    <string name="release">Release</string>
+    <string name="callalexa">Call Alexa</string>
 </resources>
