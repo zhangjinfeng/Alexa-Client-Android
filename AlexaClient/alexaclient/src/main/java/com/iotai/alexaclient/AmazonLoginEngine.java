@@ -9,10 +9,10 @@ import com.amazon.identity.auth.device.api.authorization.AuthorizationManager;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeListener;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeRequest;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeResult;
+import com.amazon.identity.auth.device.api.authorization.ProfileScope;
 import com.amazon.identity.auth.device.api.authorization.Scope;
 import com.amazon.identity.auth.device.api.authorization.ScopeFactory;
 import com.amazon.identity.auth.device.api.workflow.RequestContext;
-import com.iotai.utils.Configuration;
 import com.iotai.utils.Logger;
 
 import org.json.JSONException;
@@ -31,14 +31,16 @@ public class AmazonLoginEngine {
 
     private FragmentActivity mFragmentActivity = null;
     private RequestContext mRequestContext;
-    private Configuration mConfiguration;
+    private AuthorizeListener mAuthorizeListener;
 
     private static final Scope ALEXA_ALL_SCOPE = ScopeFactory.scopeNamed("alexa:all");
     private static final String PRODUCT_ID = "productId";
     private static final String PRODUCT_INSTANCE_ATTRIBUTES = "productInstanceAttributes";
     private static final String DEVICE_SERIAL_NUMBER = "deviceSerialNumber";
 
-    private String mAccessToken = "";
+    private boolean mIsInitialized = false;
+    private boolean mIsLoggedIn = false;
+
 
     public static AmazonLoginEngine getInstance() {
         synchronized (AmazonLoginEngine.class) {
@@ -91,6 +93,14 @@ public class AmazonLoginEngine {
         }
     }
 
+    protected void fireOnTokenReadyEvent(String token) {
+        synchronized (mListeners) {
+            for (AmazonLoginEngineListener listener : mListeners) {
+                listener.onTokenReady(token);
+            }
+        }
+    }
+
     protected void fireOnError(String errMsg) {
         synchronized (mListeners) {
             for (AmazonLoginEngineListener listener : mListeners) {
@@ -105,19 +115,32 @@ public class AmazonLoginEngine {
 
     public boolean initialize(FragmentActivity fragmentActivity)
     {
+        if (mIsInitialized)
+            return true;
+
         mFragmentActivity = fragmentActivity;
         mRequestContext = RequestContext.create(fragmentActivity);
-        mRequestContext.registerListener(new AuthorizeListenerImpl());
+        mAuthorizeListener =  new AuthorizeListenerImpl();
+        mRequestContext.registerListener(mAuthorizeListener);
+        mIsInitialized = true;
+
         return true;
     }
 
     public void release()
     {
+        if (!mIsInitialized)
+            return;
 
+        mRequestContext.unregisterListener(mAuthorizeListener);
+        mIsInitialized = false;
     }
 
     public boolean login(String serialNumber, String productId)
     {
+        if (!mIsInitialized)
+            return false;
+
         final JSONObject scopeData = new JSONObject();
         final JSONObject productInstanceAttributes = new JSONObject();
 
@@ -127,9 +150,7 @@ public class AmazonLoginEngine {
             scopeData.put(PRODUCT_ID, productId);
 
             AuthorizationManager.authorize(new AuthorizeRequest.Builder(mRequestContext)
-                    .addScope(ScopeFactory.scopeNamed("alexa:all", scopeData))
-                    .forGrantType(AuthorizeRequest.GrantType.ACCESS_TOKEN)
-                    .shouldReturnUserData(false)
+                    .addScopes(ProfileScope.profile(), ProfileScope.postalCode())
                     .build());
         } catch (JSONException e) {
             return false;
@@ -139,9 +160,13 @@ public class AmazonLoginEngine {
 
     public void signOut()
     {
+        if (!mIsInitialized)
+            return;
+
         AuthorizationManager.signOut(mFragmentActivity, new Listener<Void, AuthError>() {
             @Override
             public void onSuccess(Void aVoid) {
+                mIsLoggedIn = false;
                 fireOnSignOutEvent();
             }
 
@@ -152,14 +177,27 @@ public class AmazonLoginEngine {
         });
     }
 
-    public String getAccessToken()
+    public boolean getAccessToken()
     {
-        return mAccessToken;
+        if (!mIsInitialized)
+            return false;
+
+        if (!mIsLoggedIn)
+            return false;
+
+        Scope[] scopes = {ProfileScope.profile(), ProfileScope.postalCode()};
+        AuthorizationManager.getToken(mFragmentActivity, scopes, mTokenListener);
+
+        return true;
     }
 
     public void onResume()
     {
-        mRequestContext.onResume();
+        if (!mIsInitialized)
+            return;
+
+        if (mRequestContext != null)
+            mRequestContext.onResume();
     }
 
     private class AuthorizeListenerImpl extends AuthorizeListener {
@@ -167,7 +205,8 @@ public class AmazonLoginEngine {
         /* Authorization was completed successfully. */
         @Override
         public void onSuccess(final AuthorizeResult authorizeResult) {
-            AuthorizationManager.getToken(mFragmentActivity, new Scope[] { ALEXA_ALL_SCOPE }, new TokenListener());
+            mIsLoggedIn = true;
+            fireOnLoginEvent();
         }
 
         /* There was an error during the attempt to authorize the application. */
@@ -183,17 +222,15 @@ public class AmazonLoginEngine {
         }
     }
 
+    private TokenListener mTokenListener = new TokenListener();
+
     private class TokenListener implements Listener<AuthorizeResult, AuthError> {
         /* getToken completed successfully. */
         @Override
         public void onSuccess(AuthorizeResult authorizeResult) {
             String accessToken = authorizeResult.getAccessToken();
             Logger.i("accessToken: " + accessToken);
-            mConfiguration.setValue(Configuration.KEY_AMAZON_ACCESS_TOKEN, accessToken);
-
-            mAccessToken = accessToken;
-
-            fireOnLoginEvent();
+            fireOnTokenReadyEvent(accessToken);
         }
 
         /* There was an error during the attempt to get the token. */

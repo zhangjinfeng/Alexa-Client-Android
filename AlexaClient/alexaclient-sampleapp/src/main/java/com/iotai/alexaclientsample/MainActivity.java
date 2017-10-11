@@ -13,6 +13,7 @@ import com.iotai.utils.SerialNumberBuilder;
 public class MainActivity extends AppCompatActivity {
 
     private String SERIAL_NUMBER = SerialNumberBuilder.build(this);
+    private String mAccessToken = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonPressMe = (Button) findViewById(R.id.buttonPressMe);
         buttonPressMe.setOnClickListener(mButtonPressMeOnClickListener);
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        AmazonLoginEngine.getInstance().getAccessToken();
     }
 
     @Override
@@ -71,8 +79,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLogin() {
             Logger.i("Amazon Account Login successfully.");
-            String accessToken = AmazonLoginEngine.getInstance().getAccessToken();
-            Logger.i("AVS access token:" + accessToken);
+            AmazonLoginEngine.getInstance().getAccessToken();
         }
 
         @Override
@@ -83,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSignOut() {
             Logger.i("Amazon Account sign out successfully.");
+        }
+
+        @Override
+        public void onTokenReady(String token) {
+            Logger.i("AVS access token:" + token);
         }
 
         @Override

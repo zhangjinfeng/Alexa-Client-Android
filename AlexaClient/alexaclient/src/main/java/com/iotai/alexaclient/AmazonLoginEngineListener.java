@@ -8,5 +8,6 @@ public interface AmazonLoginEngineListener {
     void onLogin();
     void onLoginCancel();
     void onSignOut();
+    void onTokenReady(String token);
     void onError(String errMessage);
 }
