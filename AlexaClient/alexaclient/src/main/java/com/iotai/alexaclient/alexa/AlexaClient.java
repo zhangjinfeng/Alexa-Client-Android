@@ -1,4 +1,4 @@
-package com.iotai.alexaclient;
+package com.iotai.alexaclient.alexa;
 
 import android.content.Context;
 

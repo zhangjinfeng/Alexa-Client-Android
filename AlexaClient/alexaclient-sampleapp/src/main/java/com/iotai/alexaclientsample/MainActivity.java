@@ -5,8 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-import com.iotai.alexaclient.AmazonLoginEngine;
-import com.iotai.alexaclient.AmazonLoginEngineListener;
+import com.iotai.alexaclient.login.AmazonLoginEngine;
+import com.iotai.alexaclient.login.AmazonLoginEngineListener;
 import com.iotai.utils.Logger;
 import com.iotai.utils.SerialNumberBuilder;
 
@@ -28,6 +28,12 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonSignOut = (Button) findViewById(R.id.buttonSignOut);
         buttonSignOut.setOnClickListener(mButtonSignOutOnClickListener);
+
+        Button buttonInitializeAlexa = (Button) findViewById(R.id.buttonInitializeAlexa);
+        buttonInitializeAlexa.setOnClickListener(mButtonInitializeAlexaOnClickListener);
+
+        Button buttonReleaseAlexa = (Button) findViewById(R.id.buttonReleaseAlexa);
+        buttonReleaseAlexa.setOnClickListener(mButtonReleaseAlexaOnClickListener);
 
         Button buttonPressMe = (Button) findViewById(R.id.buttonPressMe);
         buttonPressMe.setOnClickListener(mButtonPressMeOnClickListener);
@@ -68,6 +74,21 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnClickListener mButtonInitializeAlexaOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+
+        }
+    };
+
+    private View.OnClickListener mButtonReleaseAlexaOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+        }
+    };
+
     private View.OnClickListener mButtonPressMeOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -95,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onTokenReady(String token) {
             Logger.i("AVS access token:" + token);
+            mAccessToken = token;
         }
 
         @Override

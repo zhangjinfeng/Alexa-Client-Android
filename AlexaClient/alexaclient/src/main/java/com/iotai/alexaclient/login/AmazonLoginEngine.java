@@ -1,4 +1,4 @@
-package com.iotai.alexaclient;
+package com.iotai.alexaclient.login;
 
 import android.support.v4.app.FragmentActivity;
 

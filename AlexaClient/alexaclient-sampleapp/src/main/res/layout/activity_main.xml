@@ -19,6 +19,19 @@
         android:layout_height="wrap_content"
         android:text="@string/signout"
         android:gravity="center_horizontal"/>
+    <Button
+        android:id="@+id/buttonInitializeAlexa"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/initialize_alexa_client"
+        android:gravity="center_horizontal"/>
+
+    <Button
+        android:id="@+id/buttonReleaseAlexa"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/release_alexa_client"
+        android:gravity="center_horizontal"/>
 
     <Button
         android:id="@+id/buttonPressMe"

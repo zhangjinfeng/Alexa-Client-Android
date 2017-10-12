@@ -18,4 +18,6 @@
     <string name="signout">Sign Out</string>
     <string name="login">Login</string>
     <string name="pressme">Press Me and Speak</string>
+    <string name="initialize_alexa_client">Initialize Alexa Client</string>
+    <string name="release_alexa_client">Release Alexa Client</string>
 </resources>

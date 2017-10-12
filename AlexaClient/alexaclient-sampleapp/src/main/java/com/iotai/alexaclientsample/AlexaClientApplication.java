@@ -2,7 +2,7 @@ package com.iotai.alexaclientsample;
 
 import android.app.Application;
 
-import com.iotai.alexaclient.AlexaClient;
+import com.iotai.alexaclient.alexa.AlexaClient;
 import com.iotai.utils.Configuration;
 
 /**
