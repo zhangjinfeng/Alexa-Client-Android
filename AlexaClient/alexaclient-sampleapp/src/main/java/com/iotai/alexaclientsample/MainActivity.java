@@ -1,5 +1,6 @@
 package com.iotai.alexaclientsample;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -37,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonPressMe = (Button) findViewById(R.id.buttonPressMe);
         buttonPressMe.setOnClickListener(mButtonPressMeOnClickListener);
+
+        Button buttonTest = (Button) findViewById(R.id.buttonTest);
+        buttonTest.setOnClickListener(mButtonTestOnClickListener);
     }
 
     @Override
@@ -93,6 +97,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
+        }
+    };
+
+    private View.OnClickListener mButtonTestOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent();
+            intent.setClass(MainActivity.this, TestActivity.class);
+            intent.putExtra("AccessToken", mAccessToken);
+            startActivity(intent);
         }
     };
 

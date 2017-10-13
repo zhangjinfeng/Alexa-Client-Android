@@ -40,4 +40,11 @@
         android:text="@string/pressme"
         android:gravity="center_horizontal"/>
 
+    <Button
+        android:id="@+id/buttonTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Test"
+        android:gravity="center_horizontal"/>
+
 </LinearLayout>

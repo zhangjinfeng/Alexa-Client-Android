@@ -25,11 +25,15 @@ public class Configuration implements Serializable {
 
     // Amazon-related information
     public final static String KEY_AMAZON_ACCESS_TOKEN = "AmazonAccessToken";
+    public final static String  KEY_AVS_BASE_URL = "AVSBaseUrl";
 
     /*********************************** Default values *************************************************/
     // APP-related information
     public final static String DEFAULT_VALUE_APP_VERSION = "1.0";
     public static final String DEFAULT_VALUE_PRODUCT_ID = "AlexaClient";
+
+    // Amazon-related informaiton
+    public final static String  DEFAULT_VALUE_AVS_BASE_URL = "https://avs-alexa-na.amazon.com";
 
     public Configuration(Context context) {
         mProperties = new Properties();
@@ -66,6 +70,9 @@ public class Configuration implements Serializable {
 
         String deviceSerialNumber = SerialNumberBuilder.build(mContext);
         props.put(KEY_DEVICE_SERIAL_NUMBER, deviceSerialNumber);
+
+        // Amazon-related information
+        props.put(KEY_AVS_BASE_URL, DEFAULT_VALUE_AVS_BASE_URL);
 
         return props;
     }

@@ -20,4 +20,8 @@
     <string name="pressme">Press Me and Speak</string>
     <string name="initialize_alexa_client">Initialize Alexa Client</string>
     <string name="release_alexa_client">Release Alexa Client</string>
+    <string name="Test">Test</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="start_down_channel">Start DownChannel</string>
+    <string name="stop_down_channel">Stop DownChannel</string>
 </resources>
