@@ -8,6 +8,14 @@ public class Directive {
     private Header header;
     private Object payload;
 
+    public Header getHeader() {
+        return header;
+    }
+
+    public Object getPayload() {
+        return payload;
+    }
+
     public class Header{
         String namespace;
         String name;

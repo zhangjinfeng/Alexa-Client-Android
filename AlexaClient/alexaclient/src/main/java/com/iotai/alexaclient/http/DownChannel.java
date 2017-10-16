@@ -1,7 +1,5 @@
 package com.iotai.alexaclient.http;
 
-import com.iotai.alexaclient.message.Directive;
-import com.iotai.alexaclient.message.ResponseParser;
 import com.iotai.utils.Logger;
 
 import java.io.IOException;
@@ -77,6 +75,14 @@ public class DownChannel {
         synchronized (mListeners) {
             for (DownChannelListener listener : mListeners) {
                 listener.onDownChannelDisconnected();
+            }
+        }
+    }
+
+    protected void fireOnDownChannelReadLineEvent(String line) {
+        synchronized (mListeners) {
+            for (DownChannelListener listener : mListeners) {
+                listener.onDownChannelReadLine(line);
             }
         }
     }
@@ -174,18 +180,8 @@ public class DownChannel {
 
                 while (!bufferedSource.exhausted()) {
                     String line = bufferedSource.readUtf8Line();
-                    try {
-                        Directive directive = ResponseParser.parseDirective(line);
-                        if (directive != null)
-                        {
-                            dispatchDirective(directive);
-                        }
-
-                    } catch (Exception e) {
-                        Logger.e("Bad line");
-                    }
+                    fireOnDownChannelReadLineEvent(line);
                 }
-
             }
         });
     }
@@ -242,10 +238,5 @@ public class DownChannel {
                     }
                 });
         Logger.i("Send AVS ping message: " + request.toString());
-    }
-
-
-    private void dispatchDirective(Directive directive) {
-
     }
 }

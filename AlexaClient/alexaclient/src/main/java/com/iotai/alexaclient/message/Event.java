@@ -27,6 +27,9 @@ public class Event {
         this.payload = payload;
     }
 
+    public void setContext(List<Event> context) {
+        this.context = context;
+    }
 
     public static class Header{
 
@@ -50,6 +53,10 @@ public class Event {
 
         public void setNamespace(String namespace) {
             this.namespace = namespace;
+        }
+
+        public void setMessageId(String messageId) {
+            this.messageId = messageId;
         }
 
         public String getMessageId() {

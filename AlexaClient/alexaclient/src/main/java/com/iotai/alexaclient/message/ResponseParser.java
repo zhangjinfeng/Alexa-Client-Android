@@ -12,7 +12,6 @@ public class ResponseParser {
         Gson gson = new Gson();
         try {
             directive = gson.fromJson(line, Directive.class);
-
         } catch (Exception e)
         {
 

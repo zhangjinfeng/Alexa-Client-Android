@@ -7,4 +7,5 @@ package com.iotai.alexaclient.http;
 public interface DownChannelListener {
     void onDownChannelConnected();
     void onDownChannelDisconnected();
+    void onDownChannelReadLine(String line);
 }

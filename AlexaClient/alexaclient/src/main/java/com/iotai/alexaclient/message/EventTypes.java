@@ -5,4 +5,5 @@ package com.iotai.alexaclient.message;
  */
 
 public interface EventTypes {
+    public final static String EVENT_TYPE_SYNCHRONIZE_STATE = "SynchronizeState";
 }

@@ -2,10 +2,18 @@ package com.iotai.alexaclient.alexa;
 
 import com.iotai.alexaclient.http.DownChannel;
 import com.iotai.alexaclient.http.DownChannelListener;
+import com.iotai.alexaclient.http.GenericSender;
+import com.iotai.alexaclient.message.Directive;
+import com.iotai.alexaclient.message.Event;
+import com.iotai.alexaclient.message.EventBuilder;
+import com.iotai.alexaclient.message.EventTypes;
+import com.iotai.alexaclient.message.ResponseParser;
 import com.iotai.utils.Logger;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +25,7 @@ public class AlexaInterfaceManager implements DownChannelListener {
 
     LinkedHashMap<String, AlexaInterface> mAlexaInterfaceHashMap;
 
-    public static AlexaInterfaceManager get_instance()
+    public static AlexaInterfaceManager getInstance()
     {
         if (_instance == null)
         {
@@ -97,9 +105,6 @@ public class AlexaInterfaceManager implements DownChannelListener {
         removeAlexaInterfaces();
     }
 
-
-
-
     @Override
     public void onDownChannelConnected() {
         sendSynchronizeStates();
@@ -110,8 +115,47 @@ public class AlexaInterfaceManager implements DownChannelListener {
 
     }
 
+    @Override
+    public void onDownChannelReadLine(String line) {
+        try {
+            Directive directive = ResponseParser.parseDirective(line);
+            if (directive != null)
+            {
+                dispatchDirective(directive);
+            }
+        } catch (Exception e) {
+            Logger.e("Bad line");
+        }
+    }
+
+    private void dispatchDirective(Directive directive) {
+        if (directive == null)
+            return;
+
+        Directive.Header header = directive.getHeader();
+        if (header == null)
+            return;
+
+        AlexaInterface alexaInterface = mAlexaInterfaceHashMap.get(header.getNamespace());
+        if (alexaInterface != null)
+            alexaInterface.onDirectiveReceived(directive);
+    }
 
     private void sendSynchronizeStates() {
+        List<Event> context = new ArrayList<Event>();
+        Iterator<Map.Entry<String, AlexaInterface>> iterator = mAlexaInterfaceHashMap.entrySet().iterator();
+        while (iterator.hasNext())
+        {
+            Map.Entry<String, AlexaInterface> entry = iterator.next();
+            AlexaInterface alexaInterface = entry.getValue();
+            if (alexaInterface != null)
+            {
+                context.add(alexaInterface.getCurrentState());
+            }
+        }
 
+        Event event = EventBuilder.buildEvent(EventTypes.EVENT_TYPE_SYNCHRONIZE_STATE, context);
+
+        GenericSender.getInstance().sendEvent(event);
     }
 }
