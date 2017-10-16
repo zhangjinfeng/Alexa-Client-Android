@@ -1,5 +1,7 @@
 package com.iotai.alexaclient.http;
 
+import com.iotai.alexaclient.message.Directive;
+import com.iotai.alexaclient.message.ResponseParser;
 import com.iotai.utils.Logger;
 
 import java.io.IOException;
@@ -12,6 +14,7 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okio.BufferedSource;
 
 /**
  * Created by zhangjf9 on 2017/10/12.
@@ -166,6 +169,23 @@ public class DownChannel {
                     Logger.i("DownChannel Connected!");
                     fireOnDownChannelConnectedEvent();
                 }
+
+                BufferedSource bufferedSource = response.body().source();
+
+                while (!bufferedSource.exhausted()) {
+                    String line = bufferedSource.readUtf8Line();
+                    try {
+                        Directive directive = ResponseParser.parseDirective(line);
+                        if (directive != null)
+                        {
+                            dispatchDirective(directive);
+                        }
+
+                    } catch (Exception e) {
+                        Logger.e("Bad line");
+                    }
+                }
+
             }
         });
     }
@@ -222,5 +242,10 @@ public class DownChannel {
                     }
                 });
         Logger.i("Send AVS ping message: " + request.toString());
+    }
+
+
+    private void dispatchDirective(Directive directive) {
+
     }
 }

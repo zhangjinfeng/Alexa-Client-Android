@@ -31,4 +31,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     provided files('libs/okhttp-3.9.0.jar')
     provided files('libs/okio-1.13.0.jar')
+    compile 'com.google.code.gson:gson:2.8.2'
 }
