@@ -21,12 +21,12 @@ public class Constants {
     public static final String CODE_CHALLENGE = "codeChallenge";
     public static final String CODE_CHALLENGE_METHOD = "codeChallengeMethod";
     public static final String DSN = "dsn";
-    public static final String PRODUCT_ID = "AlexaClient";
+    public static final String PRODUCT_ID = "AlexaClientSampleApp";
     public static final String PRODUCT_INSTANCE_ATTRIBUTES = "productInstanceAttributes";
     public static final String DEVICE_SERIAL_NUMBER = "deviceSerialNumber";
 
     // Log related information
-    public static final String LOG_TAG = "StudyEnglishWord";
+    public static final String LOG_TAG = "AlexaClientSampleApp";
     public static final boolean IS_DEBUG_ENABLED = true;
-    public static final String LOG_FILE_PATH = Environment.getExternalStorageDirectory() + "/.studyenglishword";
+    public static final String LOG_FILE_PATH = Environment.getExternalStorageDirectory() + "/.AlexaClient";
 }

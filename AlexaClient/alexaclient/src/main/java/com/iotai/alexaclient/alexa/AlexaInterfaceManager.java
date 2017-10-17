@@ -117,6 +117,7 @@ public class AlexaInterfaceManager implements DownChannelListener {
 
     @Override
     public void onDownChannelReadLine(String line) {
+        Logger.i("onDownChannelReadLine: " + line);
         try {
             Directive directive = ResponseParser.parseDirective(line);
             if (directive != null)

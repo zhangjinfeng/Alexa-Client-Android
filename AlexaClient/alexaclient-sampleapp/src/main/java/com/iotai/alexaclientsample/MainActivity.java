@@ -6,8 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.iotai.alexaclient.alexa.AlexaClient;
 import com.iotai.alexaclient.login.AmazonLoginEngine;
 import com.iotai.alexaclient.login.AmazonLoginEngineListener;
+import com.iotai.utils.Configuration;
 import com.iotai.utils.Logger;
 import com.iotai.utils.SerialNumberBuilder;
 
@@ -81,15 +83,18 @@ public class MainActivity extends AppCompatActivity {
     private View.OnClickListener mButtonInitializeAlexaOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
-
+            if ((mAccessToken == null)||(mAccessToken.length() == 0))
+                return;
+            Configuration configuration = new Configuration(MainActivity.this);
+            configuration.setValue(Configuration.KEY_AMAZON_ACCESS_TOKEN, mAccessToken);
+            AlexaClient.getInstance().initialize(MainActivity.this, configuration);
         }
     };
 
     private View.OnClickListener mButtonReleaseAlexaOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
+            AlexaClient.getInstance().release();
         }
     };
 

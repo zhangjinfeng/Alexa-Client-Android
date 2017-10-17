@@ -53,7 +53,7 @@ public class GenericSender {
         final Request request = new Request.Builder()
                 .url(URLConstants.ALEXA_EVENTS_URL)
                 .get()
-                .addHeader("authorization", "Bear "+ mAccessToken)
+                .addHeader("authorization", "Bearer "+ mAccessToken)
                 .build();
 
         Call call = httpClient.newCall(request);

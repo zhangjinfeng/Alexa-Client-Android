@@ -138,7 +138,7 @@ public class DownChannel {
         final Request request = new Request.Builder()
                 .url(URLConstants.ALEXA_DIRECTIVES_URL)
                 .get()
-                .addHeader("authorization", "Bear "+accessToken)
+                .addHeader("authorization", "Bearer "+accessToken)
                 .build();
 
         mHttpClient.newCall(request).enqueue(new Callback() {

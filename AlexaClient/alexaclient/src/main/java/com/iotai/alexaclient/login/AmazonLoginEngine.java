@@ -9,7 +9,6 @@ import com.amazon.identity.auth.device.api.authorization.AuthorizationManager;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeListener;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeRequest;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeResult;
-import com.amazon.identity.auth.device.api.authorization.ProfileScope;
 import com.amazon.identity.auth.device.api.authorization.Scope;
 import com.amazon.identity.auth.device.api.authorization.ScopeFactory;
 import com.amazon.identity.auth.device.api.workflow.RequestContext;
@@ -33,10 +32,12 @@ public class AmazonLoginEngine {
     private RequestContext mRequestContext;
     private AuthorizeListener mAuthorizeListener;
 
-    private static final Scope ALEXA_ALL_SCOPE = ScopeFactory.scopeNamed("alexa:all");
+    private static final String ALEXA_ALL = "alexa:all";
     private static final String PRODUCT_ID = "productId";
     private static final String PRODUCT_INSTANCE_ATTRIBUTES = "productInstanceAttributes";
     private static final String DEVICE_SERIAL_NUMBER = "deviceSerialNumber";
+    private static final String CODE_CHALLENGE = "CodeChallenge";
+    private static final String CODE_CHALLENGE_METHOD = "S256";
 
     private boolean mIsInitialized = false;
     private boolean mIsLoggedIn = false;
@@ -150,7 +151,9 @@ public class AmazonLoginEngine {
             scopeData.put(PRODUCT_ID, productId);
 
             AuthorizationManager.authorize(new AuthorizeRequest.Builder(mRequestContext)
-                    .addScopes(ProfileScope.profile(), ProfileScope.postalCode())
+                    .addScope(ScopeFactory.scopeNamed(ALEXA_ALL, scopeData))
+                    .forGrantType(AuthorizeRequest.GrantType.ACCESS_TOKEN)
+                    .shouldReturnUserData(false)
                     .build());
         } catch (JSONException e) {
             return false;
@@ -185,8 +188,7 @@ public class AmazonLoginEngine {
         if (!mIsLoggedIn)
             return false;
 
-        Scope[] scopes = {ProfileScope.profile(), ProfileScope.postalCode()};
-        AuthorizationManager.getToken(mFragmentActivity, scopes, mTokenListener);
+        AuthorizationManager.getToken(mFragmentActivity, new Scope[] { ScopeFactory.scopeNamed(ALEXA_ALL) }, new TokenListener());
 
         return true;
     }
