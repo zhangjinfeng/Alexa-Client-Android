@@ -47,16 +47,38 @@ public class GenericSender {
 
     }
 
+    public void sendEvent(Event event, RequestBody audioRequestBody) {
+
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("metadata", "metadata", RequestBody.create(MediaType.parse("application/json; charset=UTF-8"), event.toString()));
+
+        if (audioRequestBody != null)
+            bodyBuilder.addFormDataPart("audio", "speech.wav", audioRequestBody);
+
+        sendEvent(bodyBuilder);
+    }
+
     public void sendEvent(Event event) {
+
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("metadata", "metadata", RequestBody.create(MediaType.parse("application/json; charset=UTF-8"), event.toString()));
+
+
+        sendEvent(bodyBuilder);
+    }
+
+    private void sendEvent(MultipartBody.Builder bodyBuilder)
+    {
+        if (bodyBuilder == null)
+            return;
+
         OkHttpClient httpClient = OkHttpClientFactory.getOkHttpClient().newBuilder()
                 .connectTimeout(0, TimeUnit.MILLISECONDS)
                 .readTimeout(0, TimeUnit.MILLISECONDS)
                 .writeTimeout(0, TimeUnit.MILLISECONDS)
                 .build();
-
-        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("metadata", "metadata", RequestBody.create(MediaType.parse("application/json; charset=UTF-8"), event.toString()));
 
         final Request request = new Request.Builder()
                 .url(URLConstants.ALEXA_EVENTS_URL)

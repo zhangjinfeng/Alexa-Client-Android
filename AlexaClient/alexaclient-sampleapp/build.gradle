@@ -13,8 +13,8 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('D:\\work\\backup\\androidkeystore\\AndroidKeyStore.jks')
-//            storeFile file('/Users/xu/zjf/dev/AndroidKeyStore.jks')
+//            storeFile file('D:\\work\\backup\\androidkeystore\\AndroidKeyStore.jks')
+            storeFile file('/Users/xu/zjf/dev/AndroidKeyStore.jks')
             storePassword 'AndroidKeyStore'
             keyAlias 'AlexaClientKey'
             keyPassword 'AlexaClientKey'
