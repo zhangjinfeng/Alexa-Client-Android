@@ -4,7 +4,7 @@ package com.iotai.alexaclient.login;
  * Created by zhangjf9 on 2017/10/10.
  */
 
-public interface AmazonLoginEngineListener {
+public interface LoginEngineListener {
     void onLogin();
     void onLoginCancel();
     void onSignOut();

@@ -9,7 +9,6 @@ import com.amazon.identity.auth.device.api.authorization.AuthorizationManager;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeListener;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeRequest;
 import com.amazon.identity.auth.device.api.authorization.AuthorizeResult;
-import com.amazon.identity.auth.device.api.authorization.Scope;
 import com.amazon.identity.auth.device.api.authorization.ScopeFactory;
 import com.amazon.identity.auth.device.api.workflow.RequestContext;
 import com.iotai.utils.Logger;
@@ -17,16 +16,11 @@ import com.iotai.utils.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by zhangjf9 on 2017/10/10.
  */
 
-public class AmazonLoginEngine {
-    private static AmazonLoginEngine mInstance = null;
-    private List<AmazonLoginEngineListener> mListeners = new ArrayList<AmazonLoginEngineListener>();
+class RemoteAuthorizationLoginEngine extends LoginEngine {
 
     private FragmentActivity mFragmentActivity = null;
     private RequestContext mRequestContext;
@@ -36,83 +30,14 @@ public class AmazonLoginEngine {
     private static final String PRODUCT_ID = "productId";
     private static final String PRODUCT_INSTANCE_ATTRIBUTES = "productInstanceAttributes";
     private static final String DEVICE_SERIAL_NUMBER = "deviceSerialNumber";
-    private static final String CODE_CHALLENGE = "CodeChallenge";
     private static final String CODE_CHALLENGE_METHOD = "S256";
+
+    private String mCodeVerifier;
+    private String mCodeChallenge;
+    private AuthorizeResult mAuthorizeResult;
 
     private boolean mIsInitialized = false;
     private boolean mIsLoggedIn = false;
-
-
-    public static AmazonLoginEngine getInstance() {
-        synchronized (AmazonLoginEngine.class) {
-            if (mInstance == null) {
-                mInstance = new AmazonLoginEngine();
-            }
-        }
-
-        return mInstance;
-    }
-
-
-    public void addListener(AmazonLoginEngineListener listener) {
-        synchronized (mListeners) {
-            if (!(mListeners.contains(listener))) {
-                mListeners.add(listener);
-            }
-        }
-    }
-
-    public void removeListener(AmazonLoginEngineListener listener) {
-        synchronized (mListeners) {
-            if ((mListeners.contains(listener))) {
-                mListeners.remove(listener);
-            }
-        }
-    }
-
-    protected void fireOnLoginEvent() {
-        synchronized (mListeners) {
-            for (AmazonLoginEngineListener listener : mListeners) {
-                listener.onLogin();
-            }
-        }
-    }
-
-    protected void fireOnLoginCancelEvent() {
-        synchronized (mListeners) {
-            for (AmazonLoginEngineListener listener : mListeners) {
-                listener.onLoginCancel();
-            }
-        }
-    }
-
-    protected void fireOnSignOutEvent() {
-        synchronized (mListeners) {
-            for (AmazonLoginEngineListener listener : mListeners) {
-                listener.onSignOut();
-            }
-        }
-    }
-
-    protected void fireOnTokenReadyEvent(String token) {
-        synchronized (mListeners) {
-            for (AmazonLoginEngineListener listener : mListeners) {
-                listener.onTokenReady(token);
-            }
-        }
-    }
-
-    protected void fireOnError(String errMsg) {
-        synchronized (mListeners) {
-            for (AmazonLoginEngineListener listener : mListeners) {
-                listener.onError(errMsg);
-            }
-        }
-    }
-
-    private AmazonLoginEngine()
-    {
-    }
 
     public boolean initialize(FragmentActivity fragmentActivity)
     {
@@ -123,6 +48,18 @@ public class AmazonLoginEngine {
         mRequestContext = RequestContext.create(fragmentActivity);
         mAuthorizeListener =  new AuthorizeListenerImpl();
         mRequestContext.registerListener(mAuthorizeListener);
+
+        TokenManager.getInstance().addListener(mTokenManagerListener);
+
+        try {
+            mCodeVerifier = CodeVerifierUtils.generateCodeVerifier();
+            mCodeChallenge = CodeVerifierUtils.generateCodeChallenge(mCodeVerifier, CODE_CHALLENGE_METHOD);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
         mIsInitialized = true;
 
         return true;
@@ -134,6 +71,7 @@ public class AmazonLoginEngine {
             return;
 
         mRequestContext.unregisterListener(mAuthorizeListener);
+        TokenManager.getInstance().removeListener(mTokenManagerListener);
         mIsInitialized = false;
     }
 
@@ -152,9 +90,14 @@ public class AmazonLoginEngine {
 
             AuthorizationManager.authorize(new AuthorizeRequest.Builder(mRequestContext)
                     .addScope(ScopeFactory.scopeNamed(ALEXA_ALL, scopeData))
-                    .forGrantType(AuthorizeRequest.GrantType.ACCESS_TOKEN)
-                    .shouldReturnUserData(false)
+                    .forGrantType(AuthorizeRequest.GrantType.AUTHORIZATION_CODE)
+                    .withProofKeyParameters(mCodeChallenge,CODE_CHALLENGE_METHOD)
                     .build());
+//            AuthorizationManager.authorize(new AuthorizeRequest
+//                    .Builder(mRequestContext)
+//                    .addScopes(ProfileScope.profile(), ProfileScope.postalCode())
+//                    .build());
+
         } catch (JSONException e) {
             return false;
         }
@@ -188,7 +131,10 @@ public class AmazonLoginEngine {
         if (!mIsLoggedIn)
             return false;
 
-        AuthorizationManager.getToken(mFragmentActivity, new Scope[] { ScopeFactory.scopeNamed(ALEXA_ALL) }, new TokenListener());
+        if (mAuthorizeResult == null)
+            return false;
+
+        TokenManager.getInstance().getToken(mAuthorizeResult, mCodeVerifier, mTokenManagerListener);
 
         return true;
     }
@@ -207,6 +153,7 @@ public class AmazonLoginEngine {
         /* Authorization was completed successfully. */
         @Override
         public void onSuccess(final AuthorizeResult authorizeResult) {
+            mAuthorizeResult = authorizeResult;
             mIsLoggedIn = true;
             fireOnLoginEvent();
         }
@@ -224,21 +171,18 @@ public class AmazonLoginEngine {
         }
     }
 
-    private TokenListener mTokenListener = new TokenListener();
-
-    private class TokenListener implements Listener<AuthorizeResult, AuthError> {
+    private TokenManagerListener mTokenManagerListener = new TokenManagerListener() {
         /* getToken completed successfully. */
         @Override
-        public void onSuccess(AuthorizeResult authorizeResult) {
-            String accessToken = authorizeResult.getAccessToken();
+        public void onSuccess(String accessToken) {
             Logger.i("accessToken: " + accessToken);
             fireOnTokenReadyEvent(accessToken);
         }
 
         /* There was an error during the attempt to get the token. */
         @Override
-        public void onError(AuthError authError) {
-            fireOnError(authError.toString());
+        public void onError(String errMessage) {
+            fireOnError(errMessage);
         }
-    }
+    };
 }

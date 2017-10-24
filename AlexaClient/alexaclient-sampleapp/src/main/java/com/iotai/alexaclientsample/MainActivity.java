@@ -7,8 +7,10 @@ import android.view.View;
 import android.widget.Button;
 
 import com.iotai.alexaclient.alexa.AlexaClient;
-import com.iotai.alexaclient.login.AmazonLoginEngine;
-import com.iotai.alexaclient.login.AmazonLoginEngineListener;
+import com.iotai.alexaclient.login.AuthorizationType;
+import com.iotai.alexaclient.login.LoginEngine;
+import com.iotai.alexaclient.login.LoginEngineFactory;
+import com.iotai.alexaclient.login.LoginEngineListener;
 import com.iotai.utils.Configuration;
 import com.iotai.utils.Logger;
 import com.iotai.utils.SerialNumberBuilder;
@@ -17,14 +19,17 @@ public class MainActivity extends AppCompatActivity {
 
     private String SERIAL_NUMBER = SerialNumberBuilder.build(this);
     private String mAccessToken = "";
+    private LoginEngine mLoginEngine = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AmazonLoginEngine.getInstance().initialize(this);
-        AmazonLoginEngine.getInstance().addListener(mAmazaonEngineListener);
+        mLoginEngine = LoginEngineFactory.getAmazonLoginEngine(AuthorizationType.LOCAL_AUTHORIZATION);
+
+        mLoginEngine.initialize(this);
+        mLoginEngine.addListener(mAmazaonEngineListener);
 
         Button buttonLogin = (Button) findViewById(R.id.buttonLogin);
         buttonLogin.setOnClickListener(mButtonLoginOnClickListener);
@@ -49,34 +54,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart()
     {
         super.onStart();
-        AmazonLoginEngine.getInstance().getAccessToken();
+        mLoginEngine.getAccessToken();
     }
 
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
-        AmazonLoginEngine.getInstance().release();
+        mLoginEngine.release();
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        AmazonLoginEngine.getInstance().onResume();
+        mLoginEngine.onResume();
     }
 
     private View.OnClickListener mButtonLoginOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            AmazonLoginEngine.getInstance().login(SERIAL_NUMBER, Constants.PRODUCT_ID);
+            mLoginEngine.login(SERIAL_NUMBER, Constants.PRODUCT_ID);
         }
     };
 
     private View.OnClickListener mButtonSignOutOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            AmazonLoginEngine.getInstance().signOut();
+            mLoginEngine.signOut();
         }
     };
 
@@ -115,11 +120,11 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private AmazonLoginEngineListener mAmazaonEngineListener = new AmazonLoginEngineListener() {
+    private LoginEngineListener mAmazaonEngineListener = new LoginEngineListener() {
         @Override
         public void onLogin() {
             Logger.i("Amazon Account Login successfully.");
-            AmazonLoginEngine.getInstance().getAccessToken();
+            mLoginEngine.getAccessToken();
         }
 
         @Override
