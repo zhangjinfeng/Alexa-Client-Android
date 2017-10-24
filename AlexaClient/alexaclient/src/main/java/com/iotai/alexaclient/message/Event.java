@@ -1,5 +1,7 @@
 package com.iotai.alexaclient.message;
 
+import org.json.JSONObject;
+
 import java.util.List;
 
 /**
@@ -8,7 +10,7 @@ import java.util.List;
 
 public class Event {
     Header header;
-    Object payload;
+    JSONObject payload;
     List<Event> context;
 
     public Header getHeader() {
@@ -19,11 +21,11 @@ public class Event {
         this.header = header;
     }
 
-    public Object getPayload() {
+    public JSONObject getPayload() {
         return payload;
     }
 
-    public void setPayload(Object payload) {
+    public void setPayload(JSONObject payload) {
         this.payload = payload;
     }
 
@@ -41,7 +43,6 @@ public class Event {
         public String getNamespace() {
             return namespace;
         }
-
 
         public String getName() {
             return name;

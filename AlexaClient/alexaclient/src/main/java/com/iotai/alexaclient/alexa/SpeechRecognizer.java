@@ -1,13 +1,16 @@
 package com.iotai.alexaclient.alexa;
 
+import com.iotai.alexaclient.http.GenericSender;
 import com.iotai.alexaclient.message.Directive;
 import com.iotai.alexaclient.message.Event;
+import com.iotai.alexaclient.message.EventBuilder;
 
 /**
  * Created by zhangjf9 on 2017/10/17.
  */
 
 public class SpeechRecognizer implements AlexaInterface {
+
     enum State {
         IDLE,
         RECOGNIZING,
@@ -16,6 +19,7 @@ public class SpeechRecognizer implements AlexaInterface {
     }
 
     private State mState = State.IDLE;
+    private boolean mIsProcessing = false;
 
     @Override
     public String getName() {
@@ -60,10 +64,37 @@ public class SpeechRecognizer implements AlexaInterface {
     }
 
     private boolean startCapture() {
+        mIsProcessing = true;
         return true;
     }
 
     private void stopCapture() {
+        mIsProcessing = false;
+    }
+
+    public void start() {
+        if (mState != State.IDLE)
+            return;
+
+        Event recognizeEvent = EventBuilder.buildRecognizeEvent(null, null, null);
+
+        GenericSender.getInstance().sendEvent(recognizeEvent);
+
+        mState = State.RECOGNIZING;
+    }
+
+    public void stop() {
+        if (mState == State.IDLE)
+            return;
+
+        mState = State.IDLE;
+    }
+
+    public void feedAudio(byte[] audioData, int length)
+    {
+        if (mState != State.RECOGNIZING)
+            return;
+
 
     }
 }

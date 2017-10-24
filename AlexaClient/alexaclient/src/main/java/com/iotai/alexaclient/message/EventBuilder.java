@@ -2,6 +2,9 @@ package com.iotai.alexaclient.message;
 
 import com.iotai.utils.IDGenerator;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 /**
@@ -36,7 +39,42 @@ public class EventBuilder {
         header.setDialogRequestId(IDGenerator.getDialogId());
         event.setHeader(header);
 
-        return null;
+        return event;
     }
-//    public static build
+    public static Event buildRecognizeEvent(List<Event> context, String profile, String initiatorType) {
+        Event event = new Event();
+
+        if (context != null)
+            event.setContext(context);
+
+        Event.Header header = new Event.Header();
+        header.setNamespace("SpeechRecognizer");
+        header.setName("Recognize");
+        header.setMessageId(IDGenerator.getMessageId());
+        header.setDialogRequestId(IDGenerator.getDialogId());
+        event.setHeader(header);
+
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("format", "AUDIO_L16_RATE_16000_CHANNELS_1");
+
+            if ((profile == null)||(profile.length() == 0))
+                profile = "NEAR_FIELD";
+            payload.put("profile", profile);
+
+            if ((initiatorType == null)||(initiatorType.length() == 0))
+                initiatorType = "WAKEWORD";
+            JSONObject initiator = new JSONObject();
+            initiator.put("type", initiatorType);
+            payload.put("initiator", initiator);
+
+            event.setPayload(payload);
+        } catch (JSONException e)
+        {
+
+        }
+
+        return event;
+
+    }
 }
