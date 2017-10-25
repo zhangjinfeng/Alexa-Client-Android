@@ -8,4 +8,5 @@ public interface DownChannelListener {
     void onDownChannelConnected();
     void onDownChannelDisconnected();
     void onDownChannelReadLine(String line);
+    void onDownChannelError(String errMessage);
 }

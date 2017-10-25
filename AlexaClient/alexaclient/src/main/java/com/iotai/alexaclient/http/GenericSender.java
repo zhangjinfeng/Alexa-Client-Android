@@ -5,6 +5,7 @@ import com.iotai.alexaclient.message.Event;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -47,7 +48,7 @@ public class GenericSender {
 
     }
 
-    public void sendEvent(Event event, RequestBody audioRequestBody) {
+    public void sendAudioEvent(Event event, RequestBody audioRequestBody, Callback callback) {
 
         MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -56,29 +57,25 @@ public class GenericSender {
         if (audioRequestBody != null)
             bodyBuilder.addFormDataPart("audio", "speech.wav", audioRequestBody);
 
-        sendEvent(bodyBuilder);
+        sendEvent(bodyBuilder, callback);
     }
 
-    public void sendEvent(Event event) {
+    public void sendEvent(Event event, Callback callback) {
 
         MultipartBody.Builder bodyBuilder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("metadata", "metadata", RequestBody.create(MediaType.parse("application/json; charset=UTF-8"), event.toString()));
 
 
-        sendEvent(bodyBuilder);
+        sendEvent(bodyBuilder, callback);
     }
 
-    private void sendEvent(MultipartBody.Builder bodyBuilder)
+    private void sendEvent(MultipartBody.Builder bodyBuilder, Callback callback)
     {
         if (bodyBuilder == null)
             return;
 
-        OkHttpClient httpClient = OkHttpClientFactory.getOkHttpClient().newBuilder()
-                .connectTimeout(0, TimeUnit.MILLISECONDS)
-                .readTimeout(0, TimeUnit.MILLISECONDS)
-                .writeTimeout(0, TimeUnit.MILLISECONDS)
-                .build();
+        OkHttpClient httpClient = OkHttpClientFactory.getOkHttpClient();
 
         final Request request = new Request.Builder()
                 .url(URLConstants.ALEXA_EVENTS_URL)
@@ -88,12 +85,6 @@ public class GenericSender {
                 .addHeader("boundary",BOUNDARY)
                 .build();
 
-        Call call = httpClient.newCall(request);
-        try {
-            Response response = call.execute();
-        } catch (Exception e)
-        {
-
-        }
+        httpClient.newCall(request).enqueue(callback);
     }
 }

@@ -66,7 +66,7 @@ public class AlexaInterfaceManager implements DownChannelListener {
                 if (alexaInterface != null)
                 {
                     alexaInterface.initialize();
-                    Logger.i("Initialize alexa interface : " + alexaInterface.getName());
+                    Logger.i("Initialize alexa interface : " + alexaInterface.getNameSpace());
                 }
 
             } catch (Exception e)
@@ -93,7 +93,7 @@ public class AlexaInterfaceManager implements DownChannelListener {
                 if (alexaInterface != null)
                 {
                     alexaInterface.release();
-                    Logger.i("Release alexa interface : " + alexaInterface.getName());
+                    Logger.i("Release alexa interface : " + alexaInterface.getNameSpace());
                 }
 
             } catch (Exception e)
@@ -107,7 +107,7 @@ public class AlexaInterfaceManager implements DownChannelListener {
 
     @Override
     public void onDownChannelConnected() {
-        sendSynchronizeStates();
+
     }
 
     @Override
@@ -129,6 +129,11 @@ public class AlexaInterfaceManager implements DownChannelListener {
         }
     }
 
+    @Override
+    public void onDownChannelError(String errMessage) {
+        Logger.e(errMessage);
+    }
+
     private void dispatchDirective(Directive directive) {
         if (directive == null)
             return;
@@ -142,7 +147,9 @@ public class AlexaInterfaceManager implements DownChannelListener {
             alexaInterface.onDirectiveReceived(directive);
     }
 
-    private void sendSynchronizeStates() {
+
+    public Event getSynchronizeStatesEvent()
+    {
         List<Event> context = new ArrayList<Event>();
         Iterator<Map.Entry<String, AlexaInterface>> iterator = mAlexaInterfaceHashMap.entrySet().iterator();
         while (iterator.hasNext())
@@ -151,12 +158,14 @@ public class AlexaInterfaceManager implements DownChannelListener {
             AlexaInterface alexaInterface = entry.getValue();
             if (alexaInterface != null)
             {
-                context.add(alexaInterface.getCurrentState());
+                Event currentState = alexaInterface.getCurrentState();
+                if (currentState != null)
+                    context.add(currentState);
             }
         }
 
         Event event = EventBuilder.buildEvent(EventTypes.EVENT_TYPE_SYNCHRONIZE_STATE, context);
 
-        GenericSender.getInstance().sendEvent(event);
+        return event;
     }
 }

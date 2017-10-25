@@ -88,13 +88,13 @@ public class TokenManager {
 
     public void doPostRequest(final RequestBody form) {
 
-        OkHttpClient okclient = OkHttpClientFactory.getOkHttpClient();
+        OkHttpClient httpClient = OkHttpClientFactory.getOkHttpClient();
         Request request = new Request.Builder()
                 .url("https://api.amazon.com/auth/O2/token")
                 .post(form)
                 .build();
 
-        okclient.newCall(request).enqueue(new Callback() {
+        httpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 call.cancel();

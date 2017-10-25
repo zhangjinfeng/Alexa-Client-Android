@@ -8,7 +8,7 @@ import com.iotai.alexaclient.message.Event;
  */
 
 public interface AlexaInterface {
-    String getName();
+    String getNameSpace();
     boolean initialize();
     boolean release();
     Event getCurrentState();

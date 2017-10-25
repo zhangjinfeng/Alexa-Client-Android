@@ -1,5 +1,9 @@
 package com.iotai.alexaclient.http;
 
+import android.os.AsyncTask;
+
+import com.iotai.alexaclient.alexa.AlexaInterfaceManager;
+import com.iotai.alexaclient.message.Event;
 import com.iotai.utils.Logger;
 
 import java.io.IOException;
@@ -87,6 +91,14 @@ public class DownChannel {
         }
     }
 
+    protected void fireOnDownChannelErrorEvent(String errorMessage) {
+        synchronized (mListeners) {
+            for (DownChannelListener listener : mListeners) {
+                listener.onDownChannelError(errorMessage);
+            }
+        }
+    }
+
     public boolean start(String accessToken)
     {
         if (mStarted)
@@ -129,11 +141,12 @@ public class DownChannel {
         if (mConnected)
             return;
 
-        mHttpClient = OkHttpClientFactory.getOkHttpClient().newBuilder()
+        OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder()
                 .connectTimeout(0, TimeUnit.MILLISECONDS)
                 .readTimeout(0, TimeUnit.MILLISECONDS)
-                .writeTimeout(0, TimeUnit.MILLISECONDS)
-                .build();
+                .writeTimeout(0, TimeUnit.MILLISECONDS);
+
+        mHttpClient = clientBuilder.build();
 
         final Request request = new Request.Builder()
                 .url(URLConstants.ALEXA_DIRECTIVES_URL)
@@ -168,13 +181,36 @@ public class DownChannel {
             public void onResponse(Call call, Response response) throws IOException {
                 if (!mConnected)
                 {
-                    mHeartBeatThread = new HeartBeatThread();
-                    mHeartBeatThread.start();
+                    new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            Event synchronizeStatesEvent = AlexaInterfaceManager.getInstance().getSynchronizeStatesEvent();
+                            if (synchronizeStatesEvent != null)
+                            {
+                                GenericSender.getInstance().sendEvent(synchronizeStatesEvent, new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+                                        //                                call.cancel();
+                                        fireOnDownChannelErrorEvent("Failed to send SynchronizeStates.");
+                                    }
 
-                    mConnected = true;
-                    Logger.i("DownChannel Connected!");
-                    fireOnDownChannelConnectedEvent();
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+
+                                        mHeartBeatThread = new HeartBeatThread();
+                                        mHeartBeatThread.start();
+
+                                        mConnected = true;
+                                        Logger.i("DownChannel Connected!");
+                                        fireOnDownChannelConnectedEvent();
+                                    }
+                                });
+                            }
+                            return null;
+                        }
+                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
+
 
                 BufferedSource bufferedSource = response.body().source();
 
@@ -219,13 +255,14 @@ public class DownChannel {
 
     void sendHeartBeat()
     {
+        OkHttpClient httpClient = OkHttpClientFactory.getOkHttpClient();
         final Request request = new Request.Builder()
                 .url(URLConstants.ALEXA_PING_URL)
                 .get()
                 .addHeader("Authorization", "Bearer " + mAccessToken)
                 .build();
 
-        mHttpClient.newCall(request)
+        httpClient.newCall(request)
                 .enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {

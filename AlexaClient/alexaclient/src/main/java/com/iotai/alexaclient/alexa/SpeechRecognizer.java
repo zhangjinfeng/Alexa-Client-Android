@@ -7,7 +7,6 @@ import com.iotai.alexaclient.message.Directive;
 import com.iotai.alexaclient.message.Event;
 import com.iotai.alexaclient.message.EventBuilder;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
@@ -34,7 +33,7 @@ public class SpeechRecognizer implements AlexaInterface {
     BlockingQueue<AudioElement> mAudioBlockingQueue = new LinkedBlockingQueue<>();
 
     @Override
-    public String getName() {
+    public String getNameSpace() {
         return AlexaInterfaceNames.SPEECH_RECOGNIZER;
     }
 
@@ -45,7 +44,7 @@ public class SpeechRecognizer implements AlexaInterface {
 
     @Override
     public boolean release() {
-        return false;
+        return true;
     }
 
     @Override
@@ -61,11 +60,10 @@ public class SpeechRecognizer implements AlexaInterface {
         switch (directive.getHeader().getName())
         {
             case "StopCapture":
-                mState = State.IDLE;
+                stop();
                 break;
             case "ExpectSpeech":
-                mState = State.RECOGNIZING;
-
+                start();
                 break;
             default:
                 break;
@@ -77,11 +75,11 @@ public class SpeechRecognizer implements AlexaInterface {
         if (mState != State.IDLE)
             return;
 
+        mState = State.RECOGNIZING;
+
         Event recognizeEvent = EventBuilder.buildRecognizeEvent(null, null, null);
 
-        GenericSender.getInstance().sendEvent(recognizeEvent, mAudioRequestBody);
-
-        mState = State.RECOGNIZING;
+        GenericSender.getInstance().sendAudioEvent(recognizeEvent, mAudioRequestBody, null);
     }
 
     public void stop() {
