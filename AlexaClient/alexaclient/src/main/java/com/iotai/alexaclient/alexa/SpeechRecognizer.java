@@ -6,14 +6,20 @@ import com.iotai.alexaclient.http.GenericSender;
 import com.iotai.alexaclient.message.Directive;
 import com.iotai.alexaclient.message.Event;
 import com.iotai.alexaclient.message.EventBuilder;
+import com.iotai.alexaclient.message.ResponseParser;
+import com.iotai.alexaclient.message.ResponseParserCallback;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import okio.BufferedSink;
 
 /**
@@ -79,7 +85,7 @@ public class SpeechRecognizer implements AlexaInterface {
 
         Event recognizeEvent = EventBuilder.buildRecognizeEvent(null, null, null);
 
-        GenericSender.getInstance().sendAudioEvent(recognizeEvent, mAudioRequestBody, null);
+        GenericSender.getInstance().sendAudioEvent(recognizeEvent, mAudioRequestBody, new RecognizeRequestCallback());
     }
 
     public void stop() {
@@ -97,6 +103,42 @@ public class SpeechRecognizer implements AlexaInterface {
         // Add audio data into the queue
         AudioElement audioElement = new AudioElement(audioData, length);
         mAudioBlockingQueue.add(audioElement);
+    }
+
+    private class RecognizeRequestCallback implements Callback {
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            if (response == null)
+                return;
+
+            String boundary = response.header("boundary");
+            InputStream inputStream = response.body().byteStream();
+            ResponseParser.parseResponse(inputStream, boundary, new RecognizeResponseParserCallback());
+        }
+    }
+
+    private class RecognizeResponseParserCallback implements ResponseParserCallback {
+
+        @Override
+        public void onDirectiveReceived(Directive directive) {
+
+        }
+
+        @Override
+        public void onAudoDataReceived(byte[] audioData) {
+
+        }
+
+        @Override
+        public void onError(String errorMessage) {
+
+        }
     }
 
     private AudioRequestBody mAudioRequestBody = new AudioRequestBody();
