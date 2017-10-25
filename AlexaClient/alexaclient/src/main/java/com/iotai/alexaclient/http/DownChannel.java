@@ -31,9 +31,10 @@ public class DownChannel {
     private String mAccessToken = "";
     private OkHttpClient mHttpClient = null;
     private HeartBeatThread  mHeartBeatThread = null;
+    private Call mDownChannelCall = null;
 
-//    private static final int HEART_BEAT_INTERVAL = 4*60*1000; //Heart Beat Interval, unit: milli-seconds
-    private static final int HEART_BEAT_INTERVAL = 1000; //Heart Beat Interval, unit: milli-seconds
+    private static final int HEART_BEAT_INTERVAL = 4*60*1000; //Heart Beat Interval, unit: milli-seconds
+//    private static final int HEART_BEAT_INTERVAL = 1000; //Heart Beat Interval, unit: milli-seconds
 
     public DownChannel()
     {
@@ -154,7 +155,8 @@ public class DownChannel {
                 .addHeader("authorization", "Bearer "+accessToken)
                 .build();
 
-        mHttpClient.newCall(request).enqueue(new Callback() {
+        mDownChannelCall = mHttpClient.newCall(request);
+        mDownChannelCall.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 if (mConnected)
@@ -211,12 +213,15 @@ public class DownChannel {
                     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
 
-
-                BufferedSource bufferedSource = response.body().source();
-
-                while (!bufferedSource.exhausted()) {
-                    String line = bufferedSource.readUtf8Line();
-                    fireOnDownChannelReadLineEvent(line);
+                try {
+                    BufferedSource bufferedSource = response.body().source();
+                    while (!bufferedSource.exhausted()) {
+                        String line = bufferedSource.readUtf8Line();
+                        fireOnDownChannelReadLineEvent(line);
+                    }
+                } catch (Exception e)
+                {
+                    Logger.i(e.getMessage());
                 }
             }
         });
@@ -237,6 +242,12 @@ public class DownChannel {
 
         }
         mHeartBeatThread = null;
+
+        if (mDownChannelCall != null)
+        {
+            mDownChannelCall.cancel();
+            mDownChannelCall = null;
+        }
     }
 
     class HeartBeatThread extends Thread {
@@ -247,7 +258,7 @@ public class DownChannel {
                     Thread.sleep(HEART_BEAT_INTERVAL);
                     sendHeartBeat();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Logger.i(e.getMessage());
                 }
             }
         }
