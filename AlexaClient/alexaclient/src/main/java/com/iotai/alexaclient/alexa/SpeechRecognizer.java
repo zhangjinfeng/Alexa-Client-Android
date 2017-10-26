@@ -164,7 +164,6 @@ public class SpeechRecognizer implements AlexaInterface {
                 {
 
                 }
-
             }
         }
     }
